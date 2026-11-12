@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MedTalk AI · CRM da recepção</title><link rel="icon" href="medtalk-mascote.png">
+<style>
+*{box-sizing:border-box}
+:root{--ink:#17283a;--muted:#526579;--line:#dce5ec;--brand:#11745e;--paper:#f4f7fa}
+body{margin:0;background:var(--paper);color:var(--ink);font:14px 'Segoe UI',system-ui,sans-serif}
+header{height:67px;background:#122b3c;color:#fff;padding:0 clamp(20px,4vw,62px);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:11px;letter-spacing:.01em}.logo{display:grid;place-items:center;background:#44bf9d;color:#102b27;border-radius:9px;width:34px;height:34px;font-size:21px;font-weight:800}.brand strong{font-size:18px}.demo{font-size:12px;border:1px solid #577181;border-radius:20px;padding:5px 11px;color:#dce9ee}
+main{max-width:1640px;margin:auto;padding:32px clamp(20px,4vw,62px)}
+.eyebrow{color:var(--brand);text-transform:uppercase;font-size:11px;font-weight:800;letter-spacing:.13em;margin:0 0 8px}
+h1{font-size:clamp(28px,4vw,40px);letter-spacing:-.04em;margin:0;line-height:1.1}
+p{line-height:1.5;color:var(--muted)}.intro,.bar{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}.intro p:last-child{margin:9px 0 0}.actions{display:flex;gap:8px;flex-wrap:wrap}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:24px 0}.metric{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px}.metric span{display:block;color:var(--muted);font-size:12px}.metric strong{font-size:26px;line-height:1.25}
+.bar{margin:0 0 14px;justify-content:flex-start}.bar label{margin:0}.bar input{flex:1;min-width:200px;max-width:340px}.bar select{max-width:100%}
+button,input,select,textarea{font:inherit;border:1px solid #bfccd7;border-radius:7px;padding:9px 11px;color:inherit;background:#fff}button{cursor:pointer;font-weight:600}button:hover{border-color:#378d79;background:#f1faf7}:focus-visible{outline:3px solid #2c9d84;outline-offset:2px}.primary{background:var(--brand);color:white;border-color:var(--brand)}.primary:hover{background:#0c5949}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.col{background:#eaf0f5;border:1px solid #dee6ed;border-radius:11px;padding:10px;min-height:295px}.col.drag-target{outline:2px dashed var(--brand);outline-offset:-3px;background:#e0f1e9}.col h2{font-size:13px;margin:4px 1px 12px;display:flex;align-items:center;gap:7px}.dot{width:8px;height:8px;border-radius:50%;background:var(--stage);flex:none}.count{margin-left:auto;background:#fff;border-radius:7px;padding:1px 7px;color:var(--muted);font-size:12px}
+.card{display:block;text-align:left;width:100%;margin:0 0 8px;padding:12px;border-color:#d9e3eb;box-shadow:0 2px 4px #122b3c0c;overflow-wrap:anywhere;cursor:grab}.card strong{display:block;font-size:14px;margin:7px 0 3px}.request{display:block;color:var(--muted);font-weight:400;line-height:1.4}.tag{font-size:10px;font-weight:750;color:#1f576f;background:#e8f3f9;border-radius:4px;padding:3px 5px}.tag.unread{color:#08654d;background:#e0f5eb}.pills{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px}.pills span{background:#eef2f6;color:#3d5468;font-size:10px;padding:3px 5px;border-radius:4px}.empty{font-size:12px;padding:12px 4px;text-align:center;border:1px dashed #b8c7d4;border-radius:7px}
+.buttons{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}dialog{border:1px solid #c2d1da;border-radius:14px;width:min(545px,94vw);padding:24px;color:inherit;max-height:90vh;overflow:auto}dialog::backdrop{background:#10283999}dialog h2{margin:0 0 12px}label{display:grid;gap:5px;font-weight:600;margin:10px 0}textarea{min-height:72px;resize:vertical}article{padding:10px;background:#eaf4f0;border-radius:8px;margin:8px 0;white-space:pre-wrap;overflow-wrap:anywhere}#hint,#status{font-size:12px}
+@media(max-width:870px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:515px){.grid{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}.col{min-height:120px}.bar input{max-width:none}.bar select{width:100%}}
+
+[hidden]{display:none!important}.wide{width:min(860px,94vw)}.config-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.config-grid section,.professional{background:#f4f7fa;border:1px solid var(--line);border-radius:8px;padding:10px}.config-grid h3{margin:0}.check{display:flex;align-items:center;gap:6px;font-weight:400}.professional{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}.professional input{max-width:100%}#transcript{max-height:42vh;overflow:auto;padding:4px}#transcript article{max-width:90%}.customer{margin-left:auto;background:#e5edf7}#chatError,#configError{color:#a32626}@media(max-width:540px){.config-grid{grid-template-columns:1fr}}
+.view-switch,.settings-nav{display:flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:9px;background:#eaf0f5}.view-switch{margin-left:auto}.view-switch button,.settings-nav button{background:transparent;border-color:transparent}.view-switch button[aria-pressed=true],.settings-nav button[aria-pressed=true]{background:#fff;color:var(--brand);border-color:var(--line);box-shadow:0 1px 2px #13283a13}.grid.list-mode{display:block}.list-mode .col{min-height:0;margin-bottom:10px;background:#edf2f6}.list-mode .card{display:grid;grid-template-columns:minmax(90px,110px) minmax(130px,1fr) minmax(150px,2fr) minmax(120px,1fr);align-items:center;gap:10px}.list-mode .card strong,.list-mode .pills{margin:0}.list-mode .tag{justify-self:start}.settings-shell{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:18px;margin-top:16px}.settings-nav{flex-wrap:wrap}.settings-panel>h3,.flow-preview h3{margin:0 0 8px}.wide{width:min(1020px,95vw)}.config-grid{display:block}.config-grid section{margin-bottom:8px;background:white}.config-grid textarea{min-height:58px}.flow-preview{position:sticky;top:0;align-self:start;background:#eaf4f0;border:1px solid #d4e6df;border-radius:10px;padding:14px;overflow-wrap:anywhere}.flow-preview ol{padding-left:20px;color:var(--muted);line-height:1.7}.preview-message{white-space:pre-wrap;background:white;border-radius:8px;padding:10px;color:var(--ink)}.preview-option{display:block;padding:5px 8px;margin:4px 0;border-radius:6px;background:#fff;color:var(--brand)}.settings-actions{position:sticky;bottom:-24px;background:#fff;padding:10px 0;border-top:1px solid var(--line)}.professional{display:grid;grid-template-columns:1fr 1fr;gap:5px 10px}.professional button{justify-self:end}.professional label{min-width:0}.professional input{min-width:0}@media(max-width:690px){.settings-shell{grid-template-columns:1fr}.flow-preview{position:static}.list-mode .card{grid-template-columns:1fr 1fr}.view-switch{margin-left:0}}.option-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:8px;align-items:end;margin:6px 0}.option-row label{margin:0;min-width:0}.option-row input,.option-row select{min-width:0;width:100%}.option-row button{justify-self:start}.option-row:has(label:only-of-type){grid-template-columns:minmax(0,1fr) auto}@media(max-width:550px){.option-row{grid-template-columns:1fr}.option-row:has(label:only-of-type){grid-template-columns:1fr auto}}
+.grid{grid-template-columns:repeat(5,minmax(0,1fr))}.grid.list-mode .next-action{grid-column:1/-1}.next-action{display:block;margin-top:10px;color:var(--brand);font-size:11px}.lead-summary{border:1px solid var(--line);padding:10px;border-radius:8px;margin-top:14px}.lead-summary p{margin:4px 0}@media(max-width:1100px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:760px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:515px){.grid{grid-template-columns:1fr}}
+
+:root{--ink:#162b31;--muted:#51676c;--line:#d9e7e6;--paper:#f2f7f7;--brand:#0b6c59}body{font-family:Inter,'Segoe UI',system-ui,sans-serif;background:radial-gradient(at 90% 3%,#dcefe9,transparent 35%),var(--paper)}
+.med-brand{display:flex;align-items:center;gap:8px;color:inherit;font-size:20px;white-space:nowrap}.med-brand b{color:#46d8ad}.med-brand img{width:39px;height:39px;object-fit:contain}.login-layout{min-height:100svh;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr)}.login-side{position:relative;isolation:isolate;overflow:hidden;background:radial-gradient(at 70% 72%,#248d77,transparent 56%),linear-gradient(145deg,#08262c,#0d5148);color:white;padding:clamp(25px,5vw,72px);display:flex;flex-direction:column;min-height:420px}.login-copy{z-index:1;margin-top:clamp(35px,7vw,100px);max-width:470px}.login-copy h1{font-size:clamp(32px,5vw,58px)}.login-copy p,.overview-hero p{color:#d5f2e9}.hero-mascot{width:min(70%,360px);height:auto;object-fit:contain;align-self:center;filter:drop-shadow(0 24px 34px #062b2c90);z-index:1}.orb{position:absolute;border-radius:50%;pointer-events:none;z-index:-1;border:1px solid #e3fff35c;background:radial-gradient(circle at 30% 20%,#e7fff69a,#62cdb72c 55%,#05343125);box-shadow:inset 0 0 28px #e3fff33b,0 20px 50px #08362b35}.orb-a{width:165px;height:165px;right:6%;bottom:10%}.orb-b{width:72px;height:72px;right:32%;bottom:4%}.login-main{display:grid;place-items:center;padding:28px}.login-card{width:min(100%,440px);background:#ffffffcb;border:1px solid #fff;border-radius:26px;box-shadow:0 24px 80px #123e3b18;padding:clamp(22px,5vw,44px);backdrop-filter:blur(20px)}.login-card h2{font-size:32px;margin:0;letter-spacing:-.04em}.login-card .primary{width:100%;margin-top:10px}.muted{font-size:12px}
+.app-shell{min-height:100svh;display:grid;grid-template-columns:218px minmax(0,1fr)}.sidebar{position:sticky;top:0;height:100svh;display:flex;flex-direction:column;gap:24px;background:linear-gradient(170deg,#102e35,#102326);color:#eefcf8;padding:20px 14px}.sidebar nav{display:grid;gap:5px}.sidebar nav button{display:flex;gap:10px;align-items:center;text-align:left;color:inherit;background:transparent;border-color:transparent;padding:11px 12px}.sidebar nav button[aria-current=page],.sidebar nav button:hover{background:#ffffff17;border-color:#ffffff20}.sidebar nav span{color:#78d7bc}.account{margin-top:auto;border-top:1px solid #ffffff25;display:flex;gap:8px;align-items:center;padding-top:12px;min-width:0}.account #initial{background:#265a51;border-radius:50%;padding:6px 9px}.account div{min-width:0;flex:1;overflow-wrap:anywhere}.account small{display:block;color:#a0c1bb}.account button{background:transparent;color:white;border-color:#72918b;padding:5px}.topbar{display:flex;justify-content:space-between;gap:8px;padding:16px clamp(16px,3vw,38px);background:#ffffffac;border-bottom:1px solid var(--line);backdrop-filter:blur(14px);font-weight:650}.connection{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}.connection i{width:7px;height:7px;border-radius:50%;background:#249b81}.screen{padding:clamp(16px,3vw,38px);max-width:1700px;margin:0 auto}.overview-hero{position:relative;isolation:isolate;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:14px;min-height:218px;padding:clamp(18px,4vw,46px);border-radius:22px;background:linear-gradient(115deg,#0b333a,#176b5b);color:#fff;box-shadow:0 12px 35px #103e3b27}.overview-hero img{width:clamp(95px,24vw,225px);filter:drop-shadow(0 12px 15px #08292790)}.overview-hero .primary{background:#ecfff8;color:#064d3d;border-color:transparent}.recent,.metric,.col{border-radius:15px;background:#ffffffbb;box-shadow:0 5px 20px #173d3710}.recent{padding:16px;border:1px solid var(--line)}.recent h2{margin-top:0;font-size:18px}.recent button{display:block;width:100%;text-align:left;margin:7px 0}.card{border-radius:12px}.primary{box-shadow:0 5px 12px #0b6c5927}button,input,select,textarea{border-radius:9px}input,select,textarea{padding:11px 12px}#configuration{position:static;margin:18px 0 0;width:100%;max-width:none;max-height:none;box-shadow:0 7px 24px #173d3711;background:#ffffffc9;backdrop-filter:blur(16px)}.settings-actions{bottom:0}
+@media(max-width:800px){.app-shell{grid-template-columns:1fr}.sidebar{position:static;height:auto;gap:9px;padding:12px}.sidebar nav{display:flex;flex-wrap:wrap}.account{margin:0}.sidebar nav button{padding:6px}.login-layout{grid-template-columns:1fr}.login-side{min-height:0}.hero-mascot{width:145px}.login-copy{margin-top:20px}.login-main{padding:15px}}@media(max-width:430px){.overview-hero img{width:80px}.topbar{flex-wrap:wrap}}
+
+/* Glass surfaces */
+:root{--glass-edge:#c7dfda;--glass-shadow:0 1px 2px #20483c0b,0 10px 26px #22544710,inset 0 1px 0 #fff}
+.metric,.recent,.col,.card,.flow-preview,.config-grid section,.professional,.lead-summary,#configuration,dialog,.login-card{
+ border:1px solid var(--glass-edge);background:linear-gradient(148deg,#ffffffed,#edf8f4bd);
+ box-shadow:var(--glass-shadow);backdrop-filter:blur(10px);
+}
+.card{background:linear-gradient(150deg,#fff,#f3fbf8);border-color:#d2e6e1}
+.card:hover,.recent button:hover{border-color:#77b4a4}
+.overview-hero{border:1px solid #72bda8;box-shadow:0 13px 34px #0d524b32,inset 0 1px 0 #b9fff654}
+#overviewMetrics button{text-align:left;color:var(--ink);transition:transform .16s ease,border-color .16s ease}
+#overviewMetrics button:hover{transform:translateY(-2px);border-color:#6bb19e}
+.recent-head{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:10px}
+.recent-head h2{margin:0}.recent-head small{color:var(--muted)}
+.recent .lead-row{background:#ffffffa6;border:1px solid var(--glass-edge);box-shadow:inset 0 1px 0 #fff;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px}
+.lead-row small{color:var(--muted);display:block;line-height:1.5;overflow-wrap:anywhere}.lead-row .next-action{grid-column:1/-1;margin:0}.lead-row .arrow{color:var(--brand);grid-column:2;grid-row:1}
+.doctor-fields{grid-column:1/-1;min-width:0}.doctor-options{display:flex;justify-content:flex-end;gap:8px;align-items:center;flex-wrap:wrap}.doctor-specialty{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;margin:6px 0}.doctor-specialties{margin-bottom:6px}
+/* Keep the entry screen inside the viewport */
+.login-layout{height:100dvh;min-height:0;overflow:hidden;grid-template-rows:minmax(0,1fr)}
+.login-side{min-height:0;padding:clamp(14px,4.4vw,62px);gap:clamp(8px,3dvh,26px);justify-content:center}
+.login-copy{margin:0}.hero-mascot{width:auto;max-width:75%;height:min(32dvh,310px);min-height:0}.login-main{min-height:0}
+.login-card p{margin:8px 0}.login-card .eyebrow{margin-top:0}
+@media(max-width:800px){
+ .login-layout{grid-template-columns:1fr;grid-template-rows:minmax(0,2fr) minmax(0,3fr)}
+ .login-side{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto minmax(0,1fr);align-content:center;align-items:center;padding:12px 20px}
+ .login-copy h1{font-size:clamp(22px,5vw,32px)}.login-copy p{margin:5px 0}
+ .hero-mascot{grid-column:2;grid-row:1/3;width:clamp(65px,24vw,145px);height:auto;max-height:26dvh;max-width:none}
+ .login-main{padding:9px 15px}.login-card{padding:16px 20px}.login-card h2{font-size:25px}
+}
+@media(max-height:475px){
+ .login-layout{grid-template-columns: minmax(0,1fr) minmax(0,1.2fr);grid-template-rows:minmax(0,1fr)}
+ .login-side{display:flex;padding:10px;gap:4px}.login-copy h1{font-size:clamp(17px,3vw,27px)}
+ .hero-mascot{max-height:22dvh;width:auto}.login-card{padding:10px 14px}.login-card h2{font-size:20px}
+ .login-card p{margin:3px 0}.login-card label{margin:5px 0}.login-card .primary{margin-top:3px}
+}
+@media(max-height:285px){.login-copy p,.login-card .muted,.login-card .eyebrow,.hero-mascot{display:none}}
+
+.icon{width:19px;height:19px;flex:none;vertical-align:middle}
+.app-shell{--sidebar-width:208px;grid-template-columns:var(--sidebar-width) minmax(0,1fr)}
+.app-shell.menu-collapsed{--sidebar-width:72px}
+.sidebar{min-width:0;gap:18px}.sidebar .med-brand img{flex:none}.sidebar nav button{min-width:0;gap:10px}
+.menu-collapsed .sidebar .med-brand strong,.menu-collapsed .nav-label,.menu-collapsed .account div,.menu-collapsed .logout-label{display:none}
+.menu-collapsed .sidebar nav button,.menu-collapsed .sidebar .med-brand{justify-content:center;padding-inline:0}.menu-collapsed .account{justify-content:center}.menu-collapsed .account #initial{display:none}
+#logout{display:inline-flex;align-items:center;gap:4px}.topbar{align-items:center;padding-block:9px}.topbar-leading{display:flex;align-items:center;gap:10px}
+#toggleMenu{padding:6px;color:var(--brand);display:inline-grid;place-items:center}
+#overviewPage{padding-top:20px;padding-bottom:16px}
+.overview-hero{min-height:0;padding:12px 22px;border-radius:17px}.overview-hero h1{font-size:clamp(22px,3vw,32px)}.overview-hero p{margin:5px 0 8px}.overview-hero img{width:clamp(62px,12vw,110px)}
+#overviewMetrics{margin:13px 0;gap:9px}.metric-line{display:flex!important;align-items:center;justify-content:space-between;gap:4px}.metric-line .icon{color:var(--brand);width:17px}.overview-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);align-items:start;gap:10px}.overview-grid .recent{padding:12px}.overview-grid h2{font-size:15px}.overview-grid .lead-row{margin:5px 0;padding:7px 9px}.queue-scroll{max-height:min(240px,32dvh);overflow:auto;padding-right:3px}.distribution{display:grid;gap:6px}.distribution button{display:grid;grid-template-columns:minmax(0,1fr) 22px;gap:2px 7px;padding:3px 6px;text-align:left;background:#ffffff6b;border-color:transparent}.distribution button strong{text-align:right}.distribution progress{grid-column:1/-1;width:100%;height:5px;accent-color:var(--brand)}.distribution progress::-webkit-progress-bar{background:#dbece7;border-radius:5px}.distribution progress::-webkit-progress-value{background:var(--stage);border-radius:5px}
+@media(max-width:800px){.app-shell,.app-shell.menu-collapsed{grid-template-columns:1fr}.sidebar{gap:8px}.menu-collapsed .sidebar{display:none}.overview-hero{padding:10px 15px}}
+@media(max-width:610px){.overview-grid{grid-template-columns:1fr}.overview-hero p{display:none}.overview-hero .primary{margin-top:6px}.queue-scroll{max-height:142px}#overviewMetrics .metric{padding:8px}.distribution{gap:2px}}
+</style>
+<section id="loginPage" class="login-layout"><div class="login-side"><div class="med-brand"><img src="medtalk-mascote.png" alt=""><strong>MedTalk <b>AI</b></strong></div><div class="login-copy"><h1>Atendimento organizado desde a primeira mensagem.</h1><p>Triagem e recepção em um só lugar.</p></div><div class="orb orb-a"></div><div class="orb orb-b"></div><img class="hero-mascot" src="medtalk-mascote.png" alt="Mascote MedTalk AI"></div><div class="login-main"><form id="loginForm" class="login-card"><p class="eyebrow">MedTalk AI</p><h2>Entrar no painel</h2><p>Acesse o ambiente de demonstração da recepção.</p><label>Seu nome<input id="loginName" autocomplete="given-name" required maxlength="60" placeholder="Como podemos chamar você?"></label><button class="primary">Entrar na demonstração</button><p class="muted">Use dados fictícios neste ambiente.</p></form></div></section>
+<div id="appShell" class="app-shell" hidden><aside class="sidebar" id="sideMenu"><div class="med-brand"><img src="medtalk-mascote.png" alt=""><strong>MedTalk <b>AI</b></strong></div><nav aria-label="Menu principal"><button data-page="overview" title="Visão geral" aria-label="Visão geral"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.3"/><rect x="14" y="3" width="7" height="7" rx="1.3"/><rect x="3" y="14" width="7" height="7" rx="1.3"/><rect x="14" y="14" width="7" height="7" rx="1.3"/></svg><span class="nav-label">Visão geral</span></button><button data-page="pipeline" title="Funil" aria-label="Funil"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M9 5v14m6-14v14"/></svg><span class="nav-label">Funil</span></button><button data-page="settings" title="Configurações" aria-label="Configurações"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="2.4" fill="var(--icon-bg,#153338)"/><circle cx="15" cy="17" r="2.4" fill="var(--icon-bg,#153338)"/></svg><span class="nav-label">Configurações</span></button></nav><div class="account"><span id="initial" aria-hidden="true"></span><div><strong id="accountName"></strong><small>Demonstração</small></div><button id="logout" type="button" title="Sair" aria-label="Sair"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h6m5-12 4 4-4 4m4-4H9"/></svg><span class="logout-label">Sair</span></button></div></aside><div class="workspace"><div class="topbar"><div class="topbar-leading"><button id="toggleMenu" type="button" aria-controls="sideMenu" aria-expanded="true" title="Recolher menu" aria-label="Recolher menu"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16m7-11-3 3 3 3"/></svg></button><span id="breadcrumb"></span></div><span class="connection"><i></i> WhatsApp em simulação</span></div>
+<section id="overviewPage" class="screen" hidden><div class="overview-hero"><div class="orb orb-a"></div><div class="orb orb-b"></div><div><h1 id="greeting"></h1><p>Acompanhe a fila da recepção.</p><button id="openPipeline" class="primary">Abrir funil</button></div><img src="medtalk-mascote.png" alt=""></div><div id="overviewMetrics" class="metrics"></div><div class="overview-grid"><section class="recent"><div class="recent-head"><h2>Prontos para atender</h2><small id="readyTotal"></small></div><div id="readyLeads" class="queue-scroll"></div></section><section class="recent"><div class="recent-head"><h2>Distribuição no funil</h2><small id="funnelTotal"></small></div><div id="stageDistribution" class="distribution"></div></section></div></section>
+<main id="pipelinePage" class="screen" hidden><div class="intro"><div><p class="eyebrow">CRM do consultório</p><h1>Funil de atendimento</h1><p>Acompanhe os pedidos que chegam à recepção.</p></div><div class="actions"><button id="simulate">Simular triagem</button><button class="primary" id="new">+ Novo atendimento</button></div></div>
+<div class="metrics" id="metrics" aria-label="Resumo dos atendimentos"></div>
+<div class="bar"><input id="search" type="search" aria-label="Buscar atendimentos" placeholder="Buscar nome, pedido ou convênio"><select id="filter" aria-label="Filtrar atendimentos"><option value="all">Todos os atendimentos</option><option value="unread">Somente não lidos</option><option value="open">Somente em aberto</option><option value="new">Novos pedidos</option><option value="active">Em atendimento</option><option value="ready">Prontos para atender</option><option value="waiting">Aguardando retorno</option><option value="triage">Em triagem</option><option value="resolved">Resolvidos</option></select><div class="view-switch" aria-label="Visualização"><button data-view="board" aria-pressed="true">Quadro</button><button data-view="list" aria-pressed="false">Lista</button></div></div>
+<div class="grid" id="board"></div><p id="hint">Arraste os cartões entre as etapas ou abra um cartão para mudar seu status. Use dados fictícios. Os cartões ficam neste navegador.</p><p id="status" role="status"></p></main><section id="settingsPage" class="screen" hidden><h1>Configurações</h1><p>Gerencie o fluxo de triagem e os profissionais.</p><div id="settingsHost"></div></section></div></div>
+<dialog id="modal"><form id="form"><h2 id="title"></h2><div id="fields"></div><div class="buttons"><button class="primary" id="save">Salvar</button><button type="button" id="close">Fechar</button><button type="button" id="incoming" hidden>Simular retorno</button></div></form></dialog>
+<dialog id="configuration" class="wide"><form id="configForm"><nav class="settings-nav" aria-label="Seções das configurações"><button type="button" data-pane="channel" aria-pressed="false">Formato</button><button type="button" data-pane="questions" aria-pressed="true">Etapas da conversa</button><button type="button" data-pane="team" aria-pressed="false">Profissionais</button></nav><div class="settings-shell"><div>
+<section class="settings-panel" id="channel" hidden><h3>Formato de resposta</h3><label>Como a pessoa escolhe uma opção<select id="responseMode"><option value="buttons">Botões</option><option value="numbers">Resposta por número</option></select></label></section>
+<section class="settings-panel" id="questions"><div id="steps" class="config-grid"></div></section>
+<section class="settings-panel" id="team" hidden><h3>Profissionais</h3><p>Os profissionais ativos aparecem na triagem de consulta.</p><datalist id="specialtySuggestions"></datalist><div id="professionals"></div><button type="button" id="addProfessional">+ Adicionar profissional</button></section>
+</div><aside class="flow-preview" aria-label="Prévia da conversa"><h3>Prévia da conversa</h3><div id="livePreview"></div></aside></div><p id="configError" role="alert"></p><div class="buttons settings-actions"><button class="primary">Salvar configuração</button><button type="button" id="configClose">Voltar ao funil</button></div></form></dialog>
+<dialog id="chat"><h2>Simular conversa</h2><div id="transcript" role="log" aria-label="Mensagens da simulação"></div><div id="chatControls"><div id="choices" class="buttons"></div><form id="replyForm"><label>Sua resposta<input id="reply" required maxlength="400" autocomplete="off"></label><button class="primary">Responder</button></form><p id="chatError" role="alert"></p></div><div class="buttons"><button class="primary" id="createFromChat" hidden>Abrir lead no funil</button><button id="chatClose">Fechar</button></div></dialog><script>
+const stages=['Novo pedido','Em atendimento','Aguardando retorno','Resolvido','Em triagem'];
+const key='recepcao-crm-demo-v1';
+const el=id=>document.getElementById(id);
+const example=(name,request,patient,payment,stage=0)=>({id:Date.now()+Math.random(),name,request,patient,payment,stage,notes:'',unread:stage===0,messages:[request]});
+let cards;
+try{cards=JSON.parse(localStorage.getItem(key));}catch{}
+if(!Array.isArray(cards))cards=[example('Mariana Lima','Consulta com a Dra. Ana','Já é paciente','Unimed'),example('Rafael Souza','Primeira consulta de oftalmologia','Primeira consulta','Particular',1),example('Beatriz Costa','Informações sobre atendimento','Já é paciente','Particular',2),example('Paulo Martins','Dúvida sobre endereço','Não informado','Não informado',3)];
+const clean=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm=s=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+function persist(message){try{localStorage.setItem(key,JSON.stringify(cards));}catch{message+=' O navegador não permitiu salvar os dados.';}el('status').textContent=message;render();if(activePage==='overview')refreshOverview();}
+let draggedId=null;
+const stageColors=['#2774a6','#8a59ba','#bb761b','#158466','#527085'];
+function render(){
+ const query=norm(el('search').value.trim());
+ const filter=el('filter').value;
+ el('metrics').innerHTML=[
+  ['Em aberto',cards.filter(c=>c.stage!==3).length],
+  ['Sem leitura',cards.filter(c=>c.unread).length],
+  ['Aguardando retorno',cards.filter(c=>c.stage===2).length],
+  ['Resolvidos',cards.filter(c=>c.stage===3).length]
+ ].map(([name,count])=>'<div class="metric"><span>'+name+'</span><strong>'+count+'</strong></div>').join('');
+ el('board').replaceChildren();
+ [4,0,1,2,3].forEach(index=>{
+  const stage=stages[index];
+  const items=cards.filter(c=>c.stage===index
+   &&(filter!=='unread'||c.unread)&&(filter!=='open'||c.stage!==3)
+   &&(filter!=='ready'||(c.stage===0&&c.triage!=='pending'))&&(filter!=='waiting'||c.stage===2)
+   &&(filter!=='new'||c.stage===0)&&(filter!=='active'||c.stage===1)&&(filter!=='triage'||c.stage===4)&&(filter!=='resolved'||c.stage===3)
+   &&norm([c.name,c.request,c.patient,c.payment].join(' ')).includes(query));
+  const section=document.createElement('section');section.className='col';
+  section.style.setProperty('--stage',stageColors[index]);
+  section.innerHTML='<h2><span class="dot" aria-hidden="true"></span>'+stage+' <span class="count">'+items.length+'</span></h2>';
+  if(!items.length)section.insertAdjacentHTML('beforeend','<p class="empty">Nenhum atendimento</p>');
+  section.ondragover=e=>{if(draggedId===null)return;e.preventDefault();section.classList.add('drag-target');};
+  section.ondragleave=e=>{if(!section.contains(e.relatedTarget))section.classList.remove('drag-target');};
+  section.ondrop=e=>{
+   if(draggedId===null)return;
+   e.preventDefault();
+   section.classList.remove('drag-target');
+   const card=cards.find(c=>String(c.id)===draggedId);
+   draggedId=null;
+   if(!card||card.stage===index)return;
+   card.stage=index;
+   persist('Atendimento movido para '+stage+'.');
+  };
+  items.forEach(c=>{
+   const b=document.createElement('button');b.className='card';b.draggable=true;
+   b.innerHTML='<span class="tag'+(c.unread?' unread':'')+'">'+(c.triage==='pending'?'Triagem em andamento':c.triage==='ready'&&c.stage===0?'Pronto para atender':c.unread?'● Não lido':'Recepção')+'</span><strong>'+clean(c.name)+'</strong><span class="request">'+clean(c.request)+'</span><span class="pills"><span>'+clean(c.patient)+'</span><span>'+clean(c.payment)+'</span></span>'+(c.nextAction&&c.stage===0?'<span class="next-action">'+clean(c.nextAction)+'</span>':'');
+   b.onclick=()=>openCard(c);
+   b.ondragstart=e=>{draggedId=String(c.id);e.dataTransfer.setData('text/plain',draggedId);e.dataTransfer.effectAllowed='move';};
+   b.ondragend=()=>{draggedId=null;document.querySelectorAll('.drag-target').forEach(col=>col.classList.remove('drag-target'));};
+   section.append(b);
+  });
+  el('board').append(section);
+ });
+}
+let selected=null, simulation=false;
+function openCard(card,simulate=false){
+ selected=card;simulation=simulate;
+ el('title').textContent=simulate?'Simular triagem':card?card.name:'Novo atendimento';
+ el('save').textContent=simulate?'Criar cartão':'Salvar';
+ el('incoming').hidden=card?.stage!==2;
+ const c=card??{};
+ el('fields').innerHTML='<label>Nome<input name="name" required maxlength="100" value="'+clean(c.name)+'"></label><label>Pedido<textarea name="request" required maxlength="600">'+clean(c.request)+'</textarea></label><label>Já é paciente?<select name="patient">'+['Não informado','Primeira consulta','Já é paciente'].map(s=>'<option'+(s===c.patient?' selected':'')+'>'+s+'</option>').join('')+'</select></label><label>Particular ou convênio<input name="payment" maxlength="100" placeholder="Ex.: Particular ou Unimed" value="'+clean(c.payment)+'"></label>'+
+ (simulate?'':'<label>Etapa<select name="stage">'+stages.map((s,i)=>'<option value="'+i+'"'+(i===c.stage?' selected':'')+'>'+s+'</option>').join('')+'</select></label><label>Anotação interna<textarea name="notes" maxlength="1000">'+clean(c.notes)+'</textarea></label>')+
+ (card?.nextAction?'<div class="lead-summary"><strong>Por onde começar</strong><p>'+clean(card.nextAction)+'</p>'+(card.specialty?'<p>Especialidade: '+clean(card.specialty)+'</p>':'')+(card.professional?'<p>Profissional: '+clean(card.professional)+'</p>':'')+'</div>':'')+
+ (card?.messages?.length?'<h3>Histórico da simulação</h3>'+card.messages.map(m=>'<article>'+clean(m)+'</article>').join(''):'');
+ if(card?.unread){card.unread=false;persist('Atendimento marcado como lido.');}
+ el('modal').showModal();
+}
+el('form').onsubmit=e=>{
+ e.preventDefault();const data=new FormData(e.currentTarget);
+ const name=data.get('name').trim(),request=data.get('request').trim();
+ if(!name||!request){el('status').textContent='Preencha o nome e o pedido.';e.currentTarget.elements[!name?'name':'request'].focus();return;}
+ const payment=data.get('payment').trim()||'Não informado';
+ const stage=Number(data.get('stage')??0);
+ const card=selected??example(name,request,data.get('patient'),payment,stage);
+ Object.assign(card,{name,request,payment,stage,patient:data.get('patient'),notes:data.get('notes')??'',unread:selected?false:simulation});
+ if(!selected)cards.unshift(card);
+ el('modal').close();persist('Atendimento salvo.');
+};
+el('incoming').onclick=()=>{
+ if(selected?.stage!==2)return;
+ selected.stage=1;selected.unread=true;selected.messages.push('Retorno simulado: Olá, consegui conferir. Podemos continuar?');
+ el('modal').close();persist('Retorno recebido. O cartão voltou para Em atendimento.');
+};
+el('new').onclick=()=>openCard(null);
+
+const flowKey='recepcao-conversa-v1';
+const flowSteps=[
+ ['welcome','Boas-vindas e nome','Olá! Sou o assistente da recepção. Como podemos chamar você?'],
+ ['menu','Menu de atendimento','Como podemos ajudar?'],
+ ['patient','Vínculo com o consultório','Você já é paciente do consultório?'],
+ ['payment','Tipo de atendimento','O atendimento é particular ou por convênio?'],
+ ['insurance','Nome do convênio','Qual é o seu convênio?'],
+ ['specialty','Escolha da especialidade','Qual especialidade você procura?'],
+ ['professional','Escolha do profissional','Com qual profissional você quer atendimento?'],
+ ['other','Detalhe de outro assunto','Como podemos ajudar?'],
+ ['handoff','Encaminhamento','Obrigada! Vou encaminhar seu pedido para a recepção.']
+];
+
+const buttonDefaults={
+ menu:[{label:'Marcar consulta',to:'patient'},{label:'Outro assunto',to:'other'},{label:'Falar com a recepção',to:'handoff'}],
+ patient:[{label:'Primeira consulta',to:'payment'},{label:'Já é paciente',to:'payment'}],
+ payment:[{label:'Particular',to:'specialty'},{label:'Convênio',to:'insurance'}],
+ insurance:[],specialty:[],professional:[{label:'Sem preferência',to:'handoff'}],other:[]
+};
+const nextPhase={menu:'patient',patient:'payment',payment:'specialty',insurance:'specialty',specialty:'professional',professional:'handoff',other:'handoff'};
+function draftButtons(id){
+ return Array.from(el('buttons-'+id)?.children??[],row=>({
+  label:row.querySelector('input').value.trim(),to:row.querySelector('select').value
+ }));
+}
+function draftSpecialties(){
+ return Array.from(el('specialtyRows').children,row=>row.querySelector('input').value.trim());
+}
+function optionRow(container,label,targets,to){
+ const row=document.createElement('div');
+ row.className='option-row';
+ row.innerHTML='<label>'+ (targets?'Texto do botão':'Especialidade') +'<input required maxlength="80" value="'+clean(label)+'"></label>'+
+  (targets?'<label>Próxima etapa<select>'+targets.map(([id,title])=>'<option value="'+id+'"'+(id===to?' selected':'')+'>'+title+'</option>').join('')+'</select></label>':'')+
+  '<button type="button" aria-label="'+(targets?'Excluir botão':'Excluir especialidade')+'">Excluir</button>';
+ row.querySelector('button').onclick=()=>{row.remove();updatePreview();};
+ container.append(row);
+ return row;
+}
+function addPhaseButton(id,option={label:'',to:nextPhase[id]}){
+ const index=flowSteps.findIndex(([step])=>step===id);
+ return optionRow(el('buttons-'+id),option.label,flowSteps.slice(index+1),option.to);
+}
+function renderOptions(){
+ el('specialtyRows').replaceChildren();
+ flow.specialties.forEach(name=>optionRow(el('specialtyRows'),name));
+ el('addSpecialty').onclick=()=>optionRow(el('specialtyRows'),'').querySelector('input').focus();
+ Object.keys(buttonDefaults).forEach(id=>{
+  flow.buttons[id].forEach(option=>addPhaseButton(id,option));
+  el('add-'+id).onclick=()=>addPhaseButton(id).querySelector('input').focus();
+ });
+}
+function optionLabels(id){
+ const custom=draftButtons(id).map(option=>option.label);
+ if(id==='specialty')return [...draftSpecialties(),...custom].filter(Boolean);
+ if(id==='professional'){
+  const names=Array.from(el('professionals').children).filter(row=>row.querySelector('input[type=checkbox]').checked)
+   .map(row=>row.querySelector('input').value.trim());
+  return [...names,...custom].filter(Boolean);
+ }
+ return custom.filter(Boolean);
+}
+
+const initialFlow={mode:'buttons',prompts:Object.fromEntries(flowSteps.map(([id,,prompt])=>[id,prompt])),
+ buttons:buttonDefaults,specialties:[],optional:{patient:true,payment:true,insurance:true,specialty:true,professional:true},
+ professionals:[{name:'Dra. Ana',specialty:'Oftalmologia',active:true}]};
+let flow=structuredClone(initialFlow);
+try{
+ const stored=JSON.parse(localStorage.getItem(flowKey));
+ if(stored){
+  const prompts={...flow.prompts,...stored.prompts};
+  if(stored.prompts?.name){
+   const oldWelcome=stored.prompts.welcome;
+   const defaultWelcome='Olá! Sou o assistente da recepção. Como posso ajudar?';
+   const greeting=oldWelcome&&oldWelcome!==defaultWelcome?oldWelcome:'Olá! Sou o assistente da recepção.';
+   prompts.welcome=greeting+' '+stored.prompts.name;
+   delete prompts.name;
+  }
+  flow={...flow,...stored,prompts,optional:{...flow.optional,...stored.optional},buttons:{...flow.buttons,...stored.buttons}};
+ }
+}catch{}
+const cfg=el('configuration');
+
+const viewButtons=document.querySelectorAll('[data-view]');
+function changeView(view){
+ el('board').classList.toggle('list-mode',view==='list');
+ viewButtons.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.view===view)));
+ try{localStorage.setItem('recepcao-view',view);}catch{}
+}
+viewButtons.forEach(button=>button.onclick=()=>changeView(button.dataset.view));
+try{changeView(localStorage.getItem('recepcao-view')==='list'?'list':'board');}catch{}
+const settingsButtons=document.querySelectorAll('[data-pane]');
+function showPane(pane){
+ settingsButtons.forEach(button=>{
+  const active=button.dataset.pane===pane;
+  button.setAttribute('aria-pressed',String(active));
+  el(button.dataset.pane).hidden=!active;
+ });
+}
+settingsButtons.forEach(button=>button.onclick=()=>showPane(button.dataset.pane));
+let previewStep='welcome';
+function updatePreview(){
+ const form=el('configForm');
+ el('specialtySuggestions').innerHTML=draftSpecialties().filter(Boolean).map(value=>'<option value="'+clean(value)+'"></option>').join('');
+ const previewText=form.elements[previewStep]?.value.trim()||'';
+ const previewLabel=flowSteps.find(([id])=>id===previewStep)[1];
+ const options=optionLabels(previewStep);
+ const enabled=flowSteps.filter(([id])=>!form.elements['use-'+id]||form.elements['use-'+id].checked);
+ const professionals=Array.from(el('professionals').children)
+  .filter(row=>row.querySelector('input[type=checkbox]').checked)
+  .map(row=>row.querySelector('input').value.trim()).filter(Boolean);
+ const numbered=el('responseMode').value==='numbers';
+ el('livePreview').innerHTML='<strong>'+previewLabel+'</strong><p class="preview-message">'+clean(previewText)+'</p>'+
+  options.map((option,index)=>'<span class="preview-option">'+(numbered?(index+1)+'. ':'')+clean(option)+'</span>').join('')+
+  '<ol>'+enabled.map(([,label])=>'<li>'+label+'</li>').join('')+'</ol>'+
+  (form.elements['use-professional']?.checked&&professionals.length?'<p>Profissionais na triagem: '+professionals.map(clean).join(', ')+'</p>':'');
+}
+el('configForm').addEventListener('input',updatePreview);
+el('steps').addEventListener('focusin',event=>{
+ const step=event.target.closest('[data-step]');
+ if(!step)return;
+ previewStep=step.dataset.step;updatePreview();
+});
+el('configForm').addEventListener('invalid',event=>{
+ const panel=event.target.closest('.settings-panel');
+ if(panel)showPane(panel.id);
+},true);
+
+
+function professionalSpecialties(person){
+ return person.specialties??(person.specialty?[person.specialty]:[]);
+}
+function addProfessionalSpecialty(container,value=''){
+ const row=document.createElement('div');
+ row.className='doctor-specialty';
+ row.innerHTML='<input aria-label="Especialidade do profissional" list="specialtySuggestions" maxlength="80" placeholder="Ex.: Cardiologia" value="'+clean(value)+'"><button type="button" aria-label="Remover especialidade">×</button>';
+ row.querySelector('button').onclick=()=>{row.remove();updatePreview();};
+ container.append(row);
+ return row.querySelector('input');
+}
+function addProfessional(person={name:'',specialties:[],active:true}){
+ const row=document.createElement('div');
+ row.className='professional';
+ row.innerHTML='<label>Nome<input class="doctor-name" required maxlength="80" value="'+clean(person.name)+'"></label><div class="doctor-options"><label class="check"><input type="checkbox" '+(person.active?'checked':'')+'> Mostrar na triagem</label><button type="button" class="remove-doctor">Remover profissional</button></div><div class="doctor-fields"><strong>Especialidades</strong><div class="doctor-specialties"></div><button type="button" class="add-doctor-specialty">+ Adicionar especialidade</button></div>';
+ const container=row.querySelector('.doctor-specialties');
+ professionalSpecialties(person).forEach(value=>addProfessionalSpecialty(container,value));
+ row.querySelector('.add-doctor-specialty').onclick=()=>addProfessionalSpecialty(container).focus();
+ row.querySelector('.remove-doctor').onclick=()=>{row.remove();updatePreview();};
+ el('professionals').append(row);
+}
+function openSettings(){
+ el('responseMode').value=flow.mode;
+ el('steps').innerHTML=flowSteps.map(([id,label])=>'<section data-step="'+id+'"><h3>'+label+'</h3><label>Mensagem<textarea required maxlength="600" name="'+id+'">'+clean(flow.prompts[id])+'</textarea></label>'+(id in flow.optional?'<label class="check"><input type="checkbox" name="use-'+id+'" '+(flow.optional[id]?'checked':'')+'> Usar esta etapa</label>':'')+(id==='specialty'?'<h4>Especialidades disponíveis</h4><div id="specialtyRows"></div><button type="button" id="addSpecialty">+ Adicionar especialidade</button>':'')+(id in buttonDefaults?'<h4>Opções desta etapa</h4><div id="buttons-'+id+'"></div><button type="button" id="add-'+id+'">+ Adicionar botão</button>':'')+'</section>').join('');
+ renderOptions();
+ el('professionals').replaceChildren();
+ flow.professionals.forEach(addProfessional);
+ el('configError').textContent='';previewStep='welcome';showPane('questions');updatePreview();cfg.show();
+};
+el('addProfessional').onclick=()=>{addProfessional();el('professionals').lastElementChild.querySelector('input').focus();};
+el('configClose').onclick=()=>navigate('pipeline');
+el('configForm').onsubmit=e=>{
+ e.preventDefault();
+ const data=new FormData(e.currentTarget);
+ const prompts=Object.fromEntries(flowSteps.map(([id])=>[id,data.get(id).trim()]));
+ const blank=flowSteps.find(([id])=>!prompts[id]);
+ if(blank){showPane('questions');const field=e.currentTarget.elements[blank[0]];field.value='';field.reportValidity();return;}
+ const professionals=Array.from(el('professionals').children,row=>{
+  const name=row.querySelector('.doctor-name').value.trim();
+  const active=row.querySelector('input[type=checkbox]').checked;
+  const entries=Array.from(row.querySelectorAll('.doctor-specialties input'),input=>input.value.trim()).filter(Boolean);
+  const specialties=[...new Map(entries.map(value=>[norm(value),value])).values()];
+  return {name,active,specialties};
+ });
+ if(professionals.some(p=>!p.name)){el('configError').textContent='Preencha o nome dos profissionais.';return;}
+ const optional=Object.fromEntries(Object.keys(initialFlow.optional).map(id=>[id,data.has('use-'+id)]));
+ const specialties=draftSpecialties();
+ const buttons=Object.fromEntries(Object.keys(buttonDefaults).map(id=>[id,draftButtons(id)]));
+ const duplicates=labels=>new Set(labels.map(norm)).size!==labels.length;
+ if(duplicates(specialties)||specialties.some(name=>!name)||Object.values(buttons).some(options=>options.some(option=>!option.label)||duplicates(options.map(option=>option.label)))){
+  showPane('questions');el('configError').textContent='Preencha os nomes e use opções diferentes dentro de cada etapa.';return;
+ }
+ const next={mode:el('responseMode').value,prompts,optional,professionals,specialties,buttons};
+ try{localStorage.setItem(flowKey,JSON.stringify(next));}
+ catch{el('configError').textContent='O navegador não permitiu salvar a configuração.';return;}
+ flow=next;el('configError').textContent='';el('configError').textContent='Configuração salva.';
+};
+const chat=el('chat');
+let trial, choices, onAnswer;
+function message(who,value){
+ const bubble=document.createElement('article');bubble.className=who==='Você'?'customer':'';
+ bubble.textContent=who+': '+value;el('transcript').append(bubble);
+ trial.history.push(who+': '+value);bubble.scrollIntoView({block:'nearest'});
+}
+function ask(prompt,options,next){
+ choices=options;onAnswer=next;message('Recepção',prompt);
+ el('chatControls').hidden=false;el('choices').replaceChildren();el('reply').value='';el('chatError').textContent='';
+ const buttons=options.length&&flow.mode==='buttons';
+ el('replyForm').hidden=Boolean(buttons);
+ if(options.length&&flow.mode==='numbers'){
+  const list=document.createElement('ol');
+  options.forEach(option=>{const li=document.createElement('li');li.textContent=option;list.append(li);});
+  el('choices').append(list);
+ }
+ if(buttons) options.forEach(option=>{
+  const b=document.createElement('button');b.type='button';b.textContent=option;b.onclick=()=>answer(option);el('choices').append(b);
+ });
+}
+function answer(value){
+ message('Você',value);onAnswer(value);
+ if(trial.card.triage!=='ready')syncLead();
+}
+el('replyForm').onsubmit=e=>{
+ e.preventDefault();
+ const value=el('reply').value.trim();
+ if(!value)return;
+ if(choices.length){
+  if(!/^[1-9][0-9]*$/.test(value)||Number(value)>choices.length){el('chatError').textContent='Digite o número de uma das opções.';return;}
+  answer(choices[Number(value)-1]);return;
+ }
+ answer(value);
+};
+
+function syncLead(ready=false){
+ const card=trial.card;
+ Object.assign(card,{
+  name:trial.name||'Contato sem nome',
+  request:trial.request||'Aguardando resposta à triagem',
+  patient:trial.patient,
+  payment:trial.payment,
+  specialty:trial.specialty,
+  professional:trial.professional,
+  messages:[...trial.history],
+  triage:ready?'ready':'pending'
+ });
+ if(ready){
+  if(card.stage===4)card.stage=0;
+  card.unread=true;
+  card.nextAction=trial.professional?'Abra a conversa e confira a disponibilidade de '+trial.professional+'.':
+   trial.specialty?'Abra a conversa e veja quem pode atender em '+trial.specialty+'.':
+   trial.consultation?'Abra a conversa e confira qual especialidade ou profissional a pessoa procura.':
+   'Abra a conversa e responda ao pedido registrado no histórico.';
+ }
+ persist(ready?'Triagem concluída. Lead pronto para a recepção.':'Lead em triagem.');
+}
+
+function finish(){
+ message('Recepção',flow.prompts.handoff);
+ syncLead(true);
+ el('chatControls').hidden=true;
+ el('createFromChat').hidden=false;
+}
+
+function configuredStep(id,generated=[]){
+ if(flow.optional[id]===false){goTo(nextPhase[id]);return;}
+ const options=[...generated,...flow.buttons[id]];
+ const unique=options.filter((option,index)=>options.findIndex(item=>item.label===option.label)===index);
+ if((id==='specialty'||id==='professional')&&!unique.length){goTo(nextPhase[id]);return;}
+ ask(flow.prompts[id],unique.map(option=>option.label),value=>{
+  if(id==='menu'||id==='other')trial.request=value;
+  if(id==='menu')trial.consultation=['patient','payment','insurance','specialty','professional'].includes(unique.find(option=>option.label===value)?.to??nextPhase.menu);
+  if(id==='patient')trial.patient=value;
+  if(id==='payment'||id==='insurance')trial.payment=value;
+  if(id==='specialty'&&generated.some(option=>option.label===value))trial.specialty=value;
+  if(id==='professional'&&generated.some(option=>option.label===value))trial.professional=value;
+  if(id==='specialty'||(id==='professional'&&value!=='Sem preferência'))trial.request+=' · '+value;
+  goTo(unique.find(option=>option.label===value)?.to??nextPhase[id]);
+ });
+}
+function goTo(id){
+ if(id==='handoff'){finish();return;}
+ if(id==='specialty'){
+  configuredStep(id,flow.specialties.map(label=>({label,to:'professional'})));
+  return;
+ }
+ if(id==='professional'){
+  const active=flow.professionals.filter(person=>person.active);
+  const matching=trial.specialty?active.filter(person=>professionalSpecialties(person).some(specialty=>norm(specialty)===norm(trial.specialty))):active;
+  if(!matching.length&&flow.buttons.professional.every(option=>option.label==='Sem preferência')){finish();return;}
+  configuredStep(id,matching.map(person=>({label:person.name,to:'handoff'})));
+  return;
+ }
+ configuredStep(id);
+}
+el('simulate').onclick=()=>{
+ trial={name:'',request:'',patient:'Não informado',payment:'Não informado',specialty:'',professional:'',consultation:false,history:[],card:example('Contato sem nome','Aguardando resposta à triagem','Não informado','Não informado',4)};
+ cards.unshift(trial.card);
+ el('transcript').replaceChildren();el('createFromChat').hidden=true;chat.showModal();
+ ask(flow.prompts.welcome,[],name=>{trial.name=name;goTo('menu');});
+ syncLead();
+};
+el('chatClose').onclick=()=>chat.close();
+el('createFromChat').onclick=()=>{
+ chat.close();
+ openCard(trial.card);
+};
+
+el('close').onclick=()=>el('modal').close();
+el('search').oninput=render;
+el('filter').onchange=render;
+render();
+
+const settingsDialog=el('configuration');
+el('settingsHost').append(settingsDialog);
+const pages={overview:['overviewPage','Visão geral'],pipeline:['pipelinePage','Funil'],settings:['settingsPage','Configurações']};
+let activePage;
+
+
+const menuToggle=el('toggleMenu');
+function setMenuCollapsed(collapsed){
+ el('appShell').classList.toggle('menu-collapsed',collapsed);
+ const label=collapsed?'Expandir menu':'Recolher menu';
+ menuToggle.setAttribute('aria-expanded',String(!collapsed));
+ menuToggle.setAttribute('aria-label',label);
+ menuToggle.title=label;
+}
+let savedMenu=null;
+try{savedMenu=localStorage.getItem('medtalk-menu');}catch{}
+let menuCollapsed=savedMenu===null?(typeof matchMedia==='function'&&matchMedia('(max-width:800px)').matches):savedMenu==='collapsed';
+setMenuCollapsed(menuCollapsed);
+menuToggle.onclick=()=>{
+ menuCollapsed=!menuCollapsed;
+ setMenuCollapsed(menuCollapsed);
+ try{localStorage.setItem('medtalk-menu',menuCollapsed?'collapsed':'expanded');}catch{}
+};
+function openFilteredFunnel(filter){
+ el('search').value='';
+ el('filter').value=filter;
+ navigate('pipeline');
+ render();
+}
+function showDistribution(){
+ const total=cards.length;
+ el('funnelTotal').textContent=total+(total===1?' atendimento':' atendimentos');
+ const panel=el('stageDistribution');
+ panel.replaceChildren();
+ const filters=['new','active','waiting','resolved','triage'];
+ [4,0,1,2,3].forEach(index=>{
+  const count=cards.filter(card=>card.stage===index).length;
+  const button=document.createElement('button');
+  button.style.setProperty('--stage',stageColors[index]);
+  button.innerHTML='<span>'+stages[index]+'</span><strong>'+count+'</strong><progress aria-label="'+stages[index]+'" value="'+count+'" max="'+Math.max(total,1)+'"></progress>';
+  button.onclick=()=>openFilteredFunnel(filters[index]);
+  panel.append(button);
+ });
+}
+
+const metricIcons={"ready":"<svg class=\"icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"4\" y=\"4\" width=\"16\" height=\"16\" rx=\"3\"/><path d=\"m8 12 3 3 5-6\"/></svg>","triage":"<svg class=\"icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"5\" y=\"4\" width=\"14\" height=\"16\" rx=\"2\"/><path d=\"M8 9h8m-8 4h8m-8 4h4\"/></svg>","waiting":"<svg class=\"icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 7v5l3 2\"/></svg>","resolved":"<svg class=\"icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"m8 12 3 3 5-6\"/></svg>"};
+function refreshOverview(){
+ showDistribution();
+ const ready=cards.filter(card=>card.stage===0&&card.triage!=='pending');
+ const metrics=[
+  ['Prontos para atender',ready.length,'ready'],
+  ['Em triagem',cards.filter(card=>card.stage===4).length,'triage'],
+  ['Aguardando retorno',cards.filter(card=>card.stage===2).length,'waiting'],
+  ['Resolvidos',cards.filter(card=>card.stage===3).length,'resolved']
+ ];
+ const metricsPanel=el('overviewMetrics');
+ metricsPanel.replaceChildren();
+ metrics.forEach(([label,total,filter])=>{
+  const button=document.createElement('button');button.className='metric';
+  button.innerHTML='<span class="metric-line">'+label+metricIcons[filter]+'</span><strong>'+total+'</strong>';
+  button.onclick=()=>openFilteredFunnel(filter);
+  metricsPanel.append(button);
+ });
+ const list=el('readyLeads');
+ list.replaceChildren();
+ el('readyTotal').textContent=ready.length>8?'Mostrando 8 de '+ready.length:ready.length+' na fila';
+ if(!ready.length){
+  const empty=document.createElement('p');empty.textContent='Nenhum pedido na fila.';list.append(empty);
+ }
+ ready.slice(0,8).forEach(card=>{
+  const button=document.createElement('button');button.className='lead-row';
+  button.innerHTML='<span><strong>'+clean(card.name)+'</strong><small>'+clean(card.request)+'</small></span><span class="arrow" aria-hidden="true">→</span>'+
+   (card.nextAction?'<span class="next-action">'+clean(card.nextAction)+'</span>':'');
+  button.onclick=()=>openCard(card);
+  list.append(button);
+ });
+}
+function navigate(page){
+ if(activePage==='settings'&&page!=='settings')settingsDialog.close();
+ Object.entries(pages).forEach(([key,[id]])=>{el(id).hidden=key!==page;});
+ document.querySelectorAll('[data-page]').forEach(button=>{
+  if(button.dataset.page===page)button.setAttribute('aria-current','page');
+  else button.removeAttribute('aria-current');
+ });
+ el('breadcrumb').textContent=pages[page][1];
+ if(page==='settings'&&activePage!==page)openSettings();
+ if(page==='overview')refreshOverview();
+ activePage=page;
+}
+function enter(name){
+ el('loginPage').hidden=true;el('appShell').hidden=false;
+ el('accountName').textContent=name;
+ el('initial').textContent=Array.from(name)[0].toUpperCase();
+ el('greeting').textContent='Olá, '+name.split(/\s+/)[0];
+ navigate('overview');
+}
+el('loginForm').onsubmit=event=>{
+ event.preventDefault();
+ const field=el('loginName');
+ const name=field.value.trim();
+ if(!name){field.value='';field.reportValidity();return;}
+ try{sessionStorage.setItem('medtalk-demo-session',name);}catch{}
+ enter(name);
+};
+el('logout').onclick=()=>{
+ try{sessionStorage.removeItem('medtalk-demo-session');}catch{}
+ if(activePage==='settings')settingsDialog.close();
+ activePage=undefined;
+ el('appShell').hidden=true;el('loginPage').hidden=false;el('loginName').value='';el('loginName').focus();
+};
+document.querySelectorAll('[data-page]').forEach(button=>button.onclick=()=>navigate(button.dataset.page));
+el('openPipeline').onclick=()=>navigate('pipeline');
+try{
+ const existing=sessionStorage.getItem('medtalk-demo-session')?.trim();
+ if(existing)enter(existing);
+}catch{}
+
+</script></html>
