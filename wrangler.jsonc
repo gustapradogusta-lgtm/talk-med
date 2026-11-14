@@ -1,0 +1,18 @@
+{
+  "name": "talk-med",
+  "main": "worker.js",
+  "compatibility_date": "2026-11-13",
+  "assets": {
+    "directory": "./public",
+    "run_worker_first": [
+      "/api/health"
+    ]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "talk-med-db",
+      "database_id": "b537648d-7b38-4f39-b24b-b80b3a0fa21b"
+    }
+  ]
+}
